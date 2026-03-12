@@ -35,10 +35,11 @@ def run_check():
     alert_on_threshold = notify_cfg.get("alert_on_threshold", True)
 
     for trip in config.get("trips", []):
-        name = trip.get("name", f"{origin}→{trip['destination']}")
+        trip_origin = trip.get("origin", origin)  # per-trip origin or global fallback
+        name = trip.get("name", f"{trip_origin}→{trip['destination']}")
         logger.info(f"Procesando: {name}")
 
-        result = search_flights(origin, trip)
+        result = search_flights(trip_origin, trip)
         if not result:
             continue
 
@@ -50,11 +51,11 @@ def run_check():
         outbound_date = result["outbound_date"]
         return_date = result["return_date"]
 
-        last_price = get_last_price(origin, destination, trip_type)
+        last_price = get_last_price(trip_origin, destination, trip_type)
 
         # Always save to history
         save_price(
-            origin=origin,
+            origin=trip_origin,
             destination=destination,
             trip_type=trip_type,
             price=current_price,

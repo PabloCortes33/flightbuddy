@@ -22,13 +22,14 @@ import PriceChart from './PriceChart.jsx'
 import ThresholdEditor from './ThresholdEditor.jsx'
 import AddTripModal from './AddTripModal.jsx'
 
-export default function TripCard({ trip, origin, onUpdate, displayCurrency, rates }) {
+export default function TripCard({ trip, onUpdate, displayCurrency, rates }) {
   const [expanded, setExpanded] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [editing, setEditing] = useState(false)
 
   const {
     name,
+    origin,
     destination,
     trip_type = 'round_trip',
     stops,
@@ -180,7 +181,7 @@ export default function TripCard({ trip, origin, onUpdate, displayCurrency, rate
         <Collapse in={expanded} unmountOnExit>
           <CardContent sx={{ pt: 0 }}>
             <PriceChart
-              origin={origin}
+              origin={origin}   // trip.origin (effective, already resolved by API)
               destination={destination}
               tripType={trip_type}
               threshold={max_price}
@@ -197,6 +198,7 @@ export default function TripCard({ trip, origin, onUpdate, displayCurrency, rate
         onClose={() => setEditing(false)}
         onSaved={() => { setEditing(false); onUpdate() }}
         initialTrip={trip}
+        defaultOrigin={origin}
       />
     </>
   )

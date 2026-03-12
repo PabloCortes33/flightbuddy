@@ -54,6 +54,7 @@ const MuiDateInput = forwardRef(({ value, onClick, label, placeholder }, ref) =>
 
 const EMPTY_FORM = {
   name: '',
+  origin: '',        // vacío = usa el origen global del config
   destination: '',
   trip_type: 'round_trip',
   duration_days: 7,
@@ -66,10 +67,11 @@ const EMPTY_FORM = {
   specific_dates: [{ outbound: '', return: '' }],
 }
 
-function tripToForm(trip) {
+function tripToForm(trip, defaultOrigin) {
   const form = {
     ...EMPTY_FORM,
     name: trip.name ?? '',
+    origin: trip.origin && trip.origin !== defaultOrigin ? trip.origin : '',
     destination: trip.destination ?? '',
     trip_type: trip.trip_type ?? 'round_trip',
     duration_days: trip.duration_days ?? 7,
@@ -137,7 +139,7 @@ const datePickerSx = {
   },
 }
 
-export default function AddTripModal({ open, onClose, onSaved, initialTrip = null }) {
+export default function AddTripModal({ open, onClose, onSaved, initialTrip = null, defaultOrigin = 'SCL' }) {
   const isEdit = Boolean(initialTrip)
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState(null)
@@ -145,7 +147,7 @@ export default function AddTripModal({ open, onClose, onSaved, initialTrip = nul
 
   useEffect(() => {
     if (open) {
-      setForm(initialTrip ? tripToForm(initialTrip) : EMPTY_FORM)
+      setForm(initialTrip ? tripToForm(initialTrip, defaultOrigin) : EMPTY_FORM)
       setError(null)
     }
   }, [open, initialTrip])
@@ -174,6 +176,7 @@ export default function AddTripModal({ open, onClose, onSaved, initialTrip = nul
     try {
       const trip = {
         name: form.name.trim(),
+        ...(form.origin.trim() ? { origin: form.origin.trim().toUpperCase() } : {}),
         destination: form.destination.trim().toUpperCase(),
         trip_type: form.trip_type,
         duration_days: parseInt(form.duration_days, 10) || 7,
@@ -227,11 +230,23 @@ export default function AddTripModal({ open, onClose, onSaved, initialTrip = nul
             label="Nombre del viaje" value={form.name} onChange={set('name')}
             required fullWidth placeholder="Santiago → Miami"
           />
-          <TextField
-            label="Destino (código IATA)" value={form.destination} onChange={set('destination')}
-            required fullWidth placeholder="MIA"
-            inputProps={{ maxLength: 3, style: { textTransform: 'uppercase' } }}
-          />
+          <Stack direction="row" spacing={2}>
+            <TextField
+              label="Origen (IATA)"
+              value={form.origin}
+              onChange={set('origin')}
+              fullWidth
+              placeholder={defaultOrigin}
+              helperText={`Vacío = ${defaultOrigin} (global)`}
+              inputProps={{ maxLength: 4, style: { textTransform: 'uppercase' } }}
+              sx={{ maxWidth: 160 }}
+            />
+            <TextField
+              label="Destino (IATA)" value={form.destination} onChange={set('destination')}
+              required fullWidth placeholder="MIA"
+              inputProps={{ maxLength: 3, style: { textTransform: 'uppercase' } }}
+            />
+          </Stack>
           <Stack direction="row" spacing={2}>
             <FormControl fullWidth>
               <InputLabel>Tipo de viaje</InputLabel>

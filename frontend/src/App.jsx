@@ -13,9 +13,12 @@ import MenuItem from '@mui/material/MenuItem'
 import Tooltip from '@mui/material/Tooltip'
 import AddIcon from '@mui/icons-material/Add'
 import FlightIcon from '@mui/icons-material/Flight'
+import NotificationsIcon from '@mui/icons-material/Notifications'
+import IconButton from '@mui/material/IconButton'
 import { fetchDashboard, fetchRates } from './api.js'
 import TripCard from './components/TripCard.jsx'
 import AddTripModal from './components/AddTripModal.jsx'
+import RecipientsModal from './components/RecipientsModal.jsx'
 
 const CURRENCIES = ['USD', 'EUR', 'CLP']
 const LS_KEY = 'flightbuddy_currency'
@@ -25,6 +28,7 @@ export default function App() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
   const [addOpen, setAddOpen] = useState(false)
+  const [recipientsOpen, setRecipientsOpen] = useState(false)
 
   const [displayCurrency, setDisplayCurrency] = useState(
     () => localStorage.getItem(LS_KEY) || 'USD'
@@ -84,6 +88,11 @@ export default function App() {
             </Select>
           </Tooltip>
 
+          <Tooltip title="Destinatarios de notificaciones">
+            <IconButton color="inherit" onClick={() => setRecipientsOpen(true)} sx={{ mr: 1 }}>
+              <NotificationsIcon />
+            </IconButton>
+          </Tooltip>
           <Button color="inherit" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>
             Agregar viaje
           </Button>
@@ -103,7 +112,6 @@ export default function App() {
               <Grid item xs={12} md={6} key={trip.name}>
                 <TripCard
                   trip={trip}
-                  origin={data.origin}
                   onUpdate={load}
                   displayCurrency={displayCurrency}
                   rates={rates}
@@ -125,6 +133,11 @@ export default function App() {
         open={addOpen}
         onClose={() => setAddOpen(false)}
         onSaved={() => { setAddOpen(false); load() }}
+        defaultOrigin={data?.origin ?? 'SCL'}
+      />
+      <RecipientsModal
+        open={recipientsOpen}
+        onClose={() => setRecipientsOpen(false)}
       />
     </>
   )

@@ -81,10 +81,11 @@ def get_dashboard():
     result_trips = []
 
     for trip in config.get("trips", []):
+        trip_origin = trip.get("origin", origin)  # per-trip origin or global fallback
         destination = trip["destination"]
         trip_type = trip.get("trip_type", "round_trip")
 
-        rows = get_price_rows(origin, destination, trip_type)
+        rows = get_price_rows(trip_origin, destination, trip_type)
 
         latest = None
         prev_price = None
@@ -120,6 +121,7 @@ def get_dashboard():
 
         result_trips.append({
             **trip,
+            "origin": trip_origin,  # effective origin (per-trip or global)
             "latest": latest,
             "prev_price": prev_price,
             "stats": stats,
@@ -156,6 +158,7 @@ def get_prices(origin: str, dest: str, trip_type: str = "round_trip"):
 
 class TripCreate(BaseModel):
     name: str
+    origin: Optional[str] = None  # if None, uses global origin from config
     destination: str
     trip_type: str = "round_trip"
     duration_days: int = 7
@@ -238,6 +241,75 @@ def update_threshold(name: str, body: ThresholdUpdate):
             return trip
 
     raise HTTPException(404, f"Viaje '{name}' no encontrado")
+
+
+class RecipientCreate(BaseModel):
+    phone: str
+    apikey: str
+    name: Optional[str] = None
+
+
+def _mask_apikey(key: str) -> str:
+    return "****" + key[-4:] if len(key) > 4 else "****"
+
+
+@app.get("/api/recipients")
+def get_recipients():
+    config = load_config()
+    recipients = config.get("notify", {}).get("recipients", [])
+    return [
+        {**r, "apikey": _mask_apikey(r["apikey"])}
+        for r in recipients
+    ]
+
+
+@app.post("/api/recipients", status_code=201)
+def add_recipient(r: RecipientCreate):
+    config = load_config()
+    notify = config.setdefault("notify", {})
+    recipients = notify.setdefault("recipients", [])
+
+    if any(x["phone"] == r.phone for x in recipients):
+        raise HTTPException(400, f"El número {r.phone} ya está configurado")
+
+    new_r = {"phone": r.phone, "apikey": r.apikey}
+    if r.name:
+        new_r["name"] = r.name
+
+    recipients.append(new_r)
+    save_config(config)
+    logger.info(f"Recipient added: {r.phone}")
+    return {**new_r, "apikey": _mask_apikey(r.apikey)}
+
+
+@app.delete("/api/recipients/{phone}", status_code=204)
+def delete_recipient(phone: str):
+    config = load_config()
+    recipients = config.get("notify", {}).get("recipients", [])
+    new_recipients = [x for x in recipients if x["phone"] != phone]
+
+    if len(new_recipients) == len(recipients):
+        raise HTTPException(404, f"Número {phone} no encontrado")
+
+    config["notify"]["recipients"] = new_recipients
+    save_config(config)
+    logger.info(f"Recipient removed: {phone}")
+
+
+class SettingsUpdate(BaseModel):
+    origin: str
+
+
+@app.put("/api/settings")
+def update_settings(body: SettingsUpdate):
+    origin = body.origin.strip().upper()
+    if not origin or len(origin) > 4:
+        raise HTTPException(400, "Código de aeropuerto inválido")
+    config = load_config()
+    config["origin"] = origin
+    save_config(config)
+    logger.info(f"Origin updated: {origin}")
+    return {"origin": origin}
 
 
 # Serve built React app in production (only if dist exists)

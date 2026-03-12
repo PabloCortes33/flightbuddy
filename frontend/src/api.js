@@ -40,6 +40,45 @@ export async function deleteTrip(name) {
   if (!res.ok) throw new Error('Error al eliminar el viaje')
 }
 
+export async function fetchRecipients() {
+  const res = await fetch(`${BASE}/recipients`)
+  if (!res.ok) throw new Error('Error al cargar destinatarios')
+  return res.json()
+}
+
+export async function addRecipient(data) {
+  const res = await fetch(`${BASE}/recipients`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail || 'Error al agregar destinatario')
+  }
+  return res.json()
+}
+
+export async function deleteRecipient(phone) {
+  const res = await fetch(`${BASE}/recipients/${encodeURIComponent(phone)}`, {
+    method: 'DELETE',
+  })
+  if (!res.ok) throw new Error('Error al eliminar destinatario')
+}
+
+export async function updateSettings(origin) {
+  const res = await fetch(`${BASE}/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ origin }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail || 'Error al actualizar el origen')
+  }
+  return res.json()
+}
+
 export async function updateTrip(name, trip) {
   const res = await fetch(`${BASE}/trips/${encodeURIComponent(name)}`, {
     method: 'PUT',
