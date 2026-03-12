@@ -1,7 +1,6 @@
 import os
 import math
 import yaml
-import tempfile
 import sqlite3
 import logging
 from typing import Optional
@@ -36,19 +35,11 @@ def load_config() -> dict:
 
 
 def save_config(config: dict):
-    """Atomic config write using os.replace()."""
-    dir_ = os.path.dirname(os.path.abspath(CONFIG_PATH))
-    fd, tmp = tempfile.mkstemp(dir=dir_)
-    try:
-        with os.fdopen(fd, "w") as f:
-            yaml.safe_dump(config, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
-        os.replace(tmp, CONFIG_PATH)
-    except Exception:
-        try:
-            os.unlink(tmp)
-        except OSError:
-            pass
-        raise
+    """Write config directly to the bind-mounted file.
+    os.replace (rename) across bind mount boundaries raises EBUSY,
+    so we write in-place instead."""
+    with open(CONFIG_PATH, "w") as f:
+        yaml.safe_dump(config, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
 
 
 def db_conn():
