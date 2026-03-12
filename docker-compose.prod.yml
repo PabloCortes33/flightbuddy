@@ -1,0 +1,26 @@
+services:
+  scheduler:
+    container_name: flightbuddy_scheduler
+    restart: unless-stopped
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    env_file:
+      - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  web:
+    container_name: flightbuddy_web
+    restart: unless-stopped
+    volumes:
+      - ./config.yaml:/app/config.yaml
+    env_file:
+      - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

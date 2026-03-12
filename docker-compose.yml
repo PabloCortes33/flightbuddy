@@ -1,0 +1,20 @@
+# Base compartido — no usar directamente
+# Local: make up-local | Prod: make up-prod
+
+services:
+  scheduler:
+    build: .
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DB_PATH=/app/data/prices.db
+
+  web:
+    build: .
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DB_PATH=/app/data/prices.db
+    ports:
+      - "8000:8000"

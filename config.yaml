@@ -1,0 +1,22 @@
+origin: SCL
+trips:
+- name: Fiji
+  destination: NAN
+  trip_type: round_trip
+  duration_days: 21
+  date_range:
+    from: '2026-09-01'
+    to: '2026-09-30'
+  stops: 1
+  max_price: 1400.0
+  currency: USD
+- name: Peru Chino
+  destination: AQP
+  trip_type: round_trip
+  duration_days: 7
+  max_price: 200.0
+  currency: USD
+notify:
+  only_on_drop: true
+  alert_on_threshold: true
+  run_hour: 8

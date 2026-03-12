@@ -1,0 +1,32 @@
+services:
+  scheduler:
+    container_name: flightbuddy_scheduler_local
+    # Sin restart — si falla en local queremos ver el error y pararlo
+    # Montamos el código fuente en vivo: no hace falta rebuild al editar .py
+    volumes:
+      - .:/app
+      - ./data:/app/data  # sobrescribe /app/data del mount anterior
+    env_file:
+      - .env
+
+  web:
+    container_name: flightbuddy_web_local
+    command: uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    env_file:
+      - .env
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: flightbuddy_frontend_local
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/frontend
+      - /frontend/node_modules
+    depends_on:
+      - web
