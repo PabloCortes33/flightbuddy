@@ -26,6 +26,9 @@ logs-prod:
 run-once-local:
 	$(LOCAL) run --rm scheduler python -c "from dotenv import load_dotenv; load_dotenv(); from storage import init_db; init_db(); from main import run_check; run_check()"
 
+run-once-prod:
+	$(PROD) run --rm scheduler python -c "from dotenv import load_dotenv; load_dotenv(); from storage import init_db; init_db(); from main import run_check; run_check()"
+
 # Ver historial de precios en la DB
 db-local:
 	sqlite3 data/prices.db "SELECT origin, destination, trip_type, price, currency, airline, outbound_date, checked_at FROM price_history ORDER BY checked_at DESC LIMIT 20;"
@@ -34,4 +37,4 @@ db-local:
 install-frontend:
 	cd frontend && npm ci
 
-.PHONY: up-local down-local logs-local up-prod down-prod logs-prod run-once-local db-local install-frontend
+.PHONY: up-local down-local logs-local up-prod down-prod logs-prod run-once-local run-once-prod db-local install-frontend
