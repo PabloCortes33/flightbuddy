@@ -13,9 +13,31 @@ trips:
   destination: AQP
   trip_type: round_trip
   duration_days: 7
-  max_price: 400.0
+  max_price: 200.0
+  currency: USD
+- name: Pre Fiji
+  destination: DPS
+  trip_type: round_trip
+  duration_days: 14
+  date_range:
+    from: '2026-08-01'
+    to: '2026-08-31'
+  currency: USD
+  max_price: 1000.0
+- name: Japanese
+  destination: NRT
+  trip_type: round_trip
+  duration_days: 14
+  date_range:
+    from: '2026-12-01'
+    to: '2026-12-30'
+  max_price: 1200.0
   currency: USD
 notify:
   only_on_drop: true
   alert_on_threshold: true
   run_hour: 8
+  recipients:
+  - phone: '56961916292'
+    apikey: db78dfd8d43f
+    name: Naic
