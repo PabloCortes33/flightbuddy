@@ -36,6 +36,7 @@ trips:
 notify:
   only_on_drop: true
   alert_on_threshold: true
+  min_drop_pct: 10         # % mínimo de bajada para notificar (ej: 10 = solo si baja ≥10%)
   run_hour: 8
   recipients:
   - phone: '56961916292'

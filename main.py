@@ -33,6 +33,7 @@ def run_check():
     notify_cfg = config.get("notify", {})
     only_on_drop = notify_cfg.get("only_on_drop", True)
     alert_on_threshold = notify_cfg.get("alert_on_threshold", True)
+    min_drop_pct = notify_cfg.get("min_drop_pct", 10)
 
     for trip in config.get("trips", []):
         trip_origin = trip.get("origin", origin)  # per-trip origin or global fallback
@@ -74,9 +75,13 @@ def run_check():
                 send_alert(msg)
 
         elif current_price < last_price:
-            logger.info(f"{name}: precio BAJO {last_price} → {current_price} {currency}")
-            msg = build_drop_message(name, last_price, current_price, currency, airline, outbound_date, return_date)
-            send_alert(msg)
+            drop_pct = (last_price - current_price) / last_price * 100
+            if drop_pct >= min_drop_pct:
+                logger.info(f"{name}: precio BAJO {last_price} → {current_price} {currency} ({drop_pct:.1f}%)")
+                msg = build_drop_message(name, last_price, current_price, currency, airline, outbound_date, return_date)
+                send_alert(msg)
+            else:
+                logger.info(f"{name}: bajó {drop_pct:.1f}% (mínimo {min_drop_pct}%) — sin notificación")
 
         else:
             logger.info(f"{name}: sin cambio ({current_price} {currency})")
