@@ -12,7 +12,6 @@ import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import Tooltip from '@mui/material/Tooltip'
 import AddIcon from '@mui/icons-material/Add'
-import FlightIcon from '@mui/icons-material/Flight'
 import NotificationsIcon from '@mui/icons-material/Notifications'
 import IconButton from '@mui/material/IconButton'
 import { fetchDashboard, fetchRates } from './api.js'
@@ -29,6 +28,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [addOpen, setAddOpen] = useState(false)
   const [recipientsOpen, setRecipientsOpen] = useState(false)
+  const [currencySelectOpen, setCurrencySelectOpen] = useState(false)
 
   const [displayCurrency, setDisplayCurrency] = useState(
     () => localStorage.getItem(LS_KEY) || 'USD'
@@ -66,13 +66,15 @@ export default function App() {
     <>
       <AppBar position="static" elevation={1}>
         <Toolbar>
-          <FlightIcon sx={{ mr: 1 }} />
+          <Box component="img" src="/flying-fish-icon.png" alt="FlightBuddy" sx={{ width: 28, height: 28, mr: 1, filter: 'invert(1)' }} />
           <Typography variant="h6" sx={{ flexGrow: 1 }}>FlightBuddy</Typography>
 
-          <Tooltip title={ratesError ? 'No se pudieron cargar los tipos de cambio' : 'Moneda de visualización'}>
+          <Tooltip title={ratesError ? 'No se pudieron cargar los tipos de cambio' : 'Moneda de visualización'} open={currencySelectOpen ? false : undefined}>
             <Select
               value={displayCurrency}
               onChange={handleCurrencyChange}
+              onOpen={() => setCurrencySelectOpen(true)}
+              onClose={() => setCurrencySelectOpen(false)}
               size="small"
               sx={{
                 color: 'inherit',
